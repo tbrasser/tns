@@ -1,0 +1,50 @@
+version: "2"
+services:
+  app:
+    image: grafana/tns-app
+    ports:
+      - 30030:80
+#    enable if running with jaeger on linux
+#    network_mode: host
+    links:
+      - db
+#    TraceIDs are logged only in debug logs so this needs to be uncommented if you want to see them
+    command: --log.level=debug http://db
+    environment:
+      JAEGER_AGENT_HOST: host.docker.internal # for mac, on linux use localhost with network_mode: host
+#      This will push every trace
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
+      JAEGER_REPORTER_LOG_SPANS: "true"
+    logging:
+#      see https://github.com/grafana/loki/tree/master/docs/clients/docker-driver for how to install driver
+      driver: loki
+      options:
+#        localhost for both mac and linux as this is running outside of container. Uses old path, if you have new
+#        loki version use /loki/api/v1/push
+        loki-url: "http://localhost:3100/api/prom/push"
+        loki-external-labels: "app_name=tns-demo-app"
+
+  db:
+    image: grafana/tns-db
+    ports:
+#     published as there is a /fail route that can be hit to make DB start failing on every request
+      - 30031:80
+    command: --log.level=debug
+    environment:
+      JAEGER_AGENT_HOST: host.docker.internal
+      JAEGER_SAMPLER_TYPE: const
+      JAEGER_SAMPLER_PARAM: 1
+      JAEGER_REPORTER_LOG_SPANS: "true"
+    logging:
+      driver: loki
+      options:
+        loki-url: "http://localhost:3100/api/prom/push"
+        loki-external-labels: "app_name=tns-demo-app"
+
+
+# generates traffic and inserts some initial links
+  loadgen:
+    image: grafana/tns-loadgen
+    links:
+      - app

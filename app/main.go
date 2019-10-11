@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/grafana/tns/utils"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -24,7 +25,6 @@ import (
 	"github.com/grafana/tns/client"
 	"github.com/weaveworks/common/logging"
 	"github.com/weaveworks/common/server"
-	"github.com/weaveworks/common/tracing"
 )
 
 func main() {
@@ -37,12 +37,11 @@ func main() {
 
 	// Use a gokit logger, and tell the server to use it.
 	logger := level.NewFilter(log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout)), serverConfig.LogLevel.Gokit)
+
+	closeTracing := utils.SetupTracing("app", logger)
+	defer closeTracing()
+
 	serverConfig.Log = logging.GoKit(logger)
-
-	// Setting the environment variable JAEGER_AGENT_HOST enables tracing
-	trace := tracing.NewFromEnv("app")
-	defer trace.Close()
-
 	s, err := server.New(serverConfig)
 	if err != nil {
 		level.Error(logger).Log("msg", "error starting server", "err", err)
@@ -311,3 +310,4 @@ func (a *app) Vote(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, req, newURL, http.StatusFound)
 	return
 }
+
