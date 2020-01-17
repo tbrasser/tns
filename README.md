@@ -27,6 +27,7 @@ $ GO111MODULE=on go get github.com/grafana/tanka/cmd/tk@v0.5.0
 $ go get github.com/jsonnet-bundler/jsonnet-bundler/cmd/jb
 ```
 
+Note: if you have newer version of Tanka it is possible that `tk init` will already setup k8s and k libs for you. 
 ```sh
 $ mkdir tanka; cd tanka
 $ tk init
@@ -35,6 +36,12 @@ $ jb install github.com/grafana/jsonnet-libs/prometheus-ksonnet
 $ curl https://raw.githubusercontent.com/ksonnet/ksonnet-lib/master/ksonnet.beta.3/k8s.libsonnet > vendor/k8s.libsonnet
 $ curl https://raw.githubusercontent.com/ksonnet/ksonnet-lib/master/ksonnet.beta.3/k.libsonnet > vendor/k.libsonnet
 ```
+
+If you get errors later while applying change like:
+```
+evaluating jsonnet: RUNTIME ERROR: couldn't open import "k.libsonnet": no match locally or in the Jsonnet library paths
+```
+see this issue https://github.com/grafana/tanka/issues/132.
 
 Update environments/default/main.jsonnet to be:
 
