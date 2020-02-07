@@ -44,15 +44,6 @@ prometheus + promtail + tns_mixin + {
     },
   },
 
-  _images+:: {
-    grafana: 'grafana/grafana-dev:explore-trace-ui-demo-c8434d13350e0f43c3937ff37ce8932310ac7fd9-ubuntu',
-  },
-
-  main_prometheus+: {
-    prometheus_container+::
-      $.util.resourcesRequests('250m', '500Mi'),
-  },
-
   // Expose the nginx admin frontend on port 30040 of the node.
   nginx_service+:
     service.mixin.spec.withType('NodePort') +
